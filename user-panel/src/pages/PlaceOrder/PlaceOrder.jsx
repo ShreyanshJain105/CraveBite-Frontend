@@ -1,4 +1,3 @@
-
 import React, { useContext, useState } from "react";
 import "./PlaceOrder.css";
 import { assets } from "../../assets/assets";
@@ -13,7 +12,6 @@ import {
   verifyPayment,
 } from "../../service/orderService";
 import { clearCartItems } from "../../service/cartService";
-
 
 const PlaceOrder = () => {
   const { foodList, quantities, setQuantities, token } =
@@ -31,10 +29,65 @@ const PlaceOrder = () => {
     zip: "",
   });
 
+  // State-City mapping
+  const stateCityMap = {
+    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati", "Kadapa", "Anantapur", "Eluru"],
+    "Arunachal Pradesh": ["Itanagar", "Naharlagun", "Pasighat", "Tezpur", "Bomdila"],
+    "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Tinsukia", "Nagaon", "Tezpur", "Barpeta"],
+    "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", "Darbhanga", "Bihar Sharif", "Arrah", "Begusarai", "Katihar"],
+    "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Durg", "Rajnandgaon", "Jagdalpur", "Raigarh"],
+    "Goa": ["Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda"],
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Junagadh", "Anand", "Navsari", "Morbi", "Mehsana", "Bharuch"],
+    "Haryana": ["Faridabad", "Gurgaon", "Hisar", "Rohtak", "Panipat", "Karnal", "Sonipat", "Yamunanagar", "Panchkula", "Bhiwani", "Bahadurgarh", "Jind"],
+    "Himachal Pradesh": ["Shimla", "Dharamshala", "Solan", "Mandi", "Palampur", "Baddi", "Nahan", "Kullu", "Hamirpur"],
+    "Jharkhand": ["Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Deoghar", "Hazaribagh", "Giridih", "Ramgarh", "Medininagar"],
+    "Karnataka": ["Bangalore", "Mysore", "Hubli", "Mangalore", "Belgaum", "Gulbarga", "Davanagere", "Bellary", "Bijapur", "Shimoga", "Tumkur", "Raichur", "Bidar", "Hospet", "Hassan", "Bhadravati"],
+    "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Kollam", "Palakkad", "Alappuzha", "Malappuram", "Kannur", "Kottayam", "Kasaragod", "Pathanamthitta"],
+    "Madhya Pradesh": ["Indore", "Bhopal", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa", "Murwara", "Singrauli", "Burhanpur", "Khandwa"],
+    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad", "Solapur", "Amravati", "Kolhapur", "Sangli", "Jalgaon", "Akola", "Latur", "Dhule", "Ahmednagar", "Chandrapur", "Parbhani", "Ichalkaranji", "Jalna", "Ambernath", "Bhiwandi"],
+    "Manipur": ["Imphal", "Thoubal", "Churachandpur", "Bishnupur", "Senapati"],
+    "Meghalaya": ["Shillong", "Tura", "Jowai", "Nongpoh", "Baghmara"],
+    "Mizoram": ["Aizawl", "Lunglei", "Serchhip", "Champhai", "Kolasib"],
+    "Nagaland": ["Kohima", "Dimapur", "Mokokchung", "Tuensang", "Wokha"],
+    "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Brahmapur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada"],
+    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Hoshiarpur", "Batala", "Moga", "Malerkotla", "Khanna", "Mohali"],
+    "Rajasthan": ["Jaipur", "Jodhpur", "Kota", "Bikaner", "Udaipur", "Ajmer", "Bhilwara", "Alwar", "Bharatpur", "Sikar", "Pali", "Sri Ganganagar", "Kishangarh", "Baran", "Dhaulpur", "Tonk", "Beawar", "Hanumangarh"],
+    "Sikkim": ["Gangtok", "Namchi", "Geyzing", "Mangan"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tiruppur", "Erode", "Vellore", "Thoothukudi", "Dindigul", "Thanjavur", "Ranipet", "Sivakasi", "Karur", "Udhagamandalam", "Hosur", "Nagercoil", "Kanchipuram", "Kumarakonam", "Karaikkudi"],
+    "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", "Ramagundam", "Mahbubnagar", "Nalgonda", "Adilabad", "Suryapet", "Miryalaguda", "Jagtial", "Mancherial", "Nirmal"],
+    "Tripura": ["Agartala", "Dharmanagar", "Udaipur", "Kailashahar", "Belonia"],
+    "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Varanasi", "Meerut", "Allahabad", "Bareilly", "Aligarh", "Moradabad", "Saharanpur", "Gorakhpur", "Noida", "Firozabad", "Jhansi", "Muzaffarnagar", "Mathura", "Rampur", "Shahjahanpur", "Farrukhabad", "Mau", "Hapur", "Etawah", "Mirzapur", "Bulandshahr", "Sambhal", "Amroha", "Hardoi", "Fatehpur", "Raebareli"],
+    "Uttarakhand": ["Dehradun", "Haridwar", "Roorkee", "Haldwani", "Rudrapur", "Kashipur", "Rishikesh", "Pithoragarh", "Pauri", "Almora", "Bageshwar", "Champawat", "Nainital", "Tehri", "Uttarkashi"],
+    "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Malda", "Bardhaman", "Baharampur", "Habra", "Kharagpur", "Shantipur", "Dankuni", "Dhulian", "Raniganj", "Haldia", "Raiganj", "Krishnanagar", "Medinipur"],
+    "Andaman and Nicobar Islands": ["Port Blair", "Rangat", "Mayabunder", "Diglipur", "Car Nicobar"],
+    "Chandigarh": ["Chandigarh"],
+    "Dadra and Nagar Haveli and Daman and Diu": ["Daman", "Diu", "Silvassa"],
+    "Delhi": ["New Delhi", "Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi", "Central Delhi", "North West Delhi", "North East Delhi", "South West Delhi", "South East Delhi"],
+    "Jammu and Kashmir": ["Srinagar", "Jammu", "Baramulla", "Anantnag", "Sopore", "Kathua", "Handwara", "Punch", "Rajauri", "Kupwara"],
+    "Ladakh": ["Leh", "Kargil", "Nubra", "Changthang"],
+    "Lakshadweep": ["Kavaratti", "Agatti", "Minicoy"],
+    "Puducherry": ["Puducherry", "Karaikal", "Mahe", "Yanam"]
+  };
+
   const onChangeHandler = (event) => {
     const name = event.target.name;
     const value = event.target.value;
-    setData((data) => ({ ...data, [name]: value }));
+    
+    if (name === 'state') {
+      // Reset city when state changes
+      setData((prevData) => ({
+        ...prevData,
+        state: value,
+        city: ""
+      }));
+    } else {
+      setData((prevData) => ({ ...prevData, [name]: value }));
+    }
+  };
+
+  // Get cities for selected state
+  const getCitiesForState = () => {
+    return data.state ? stateCityMap[data.state] || [] : [];
   };
 
   const onSubmitHandler = async (event) => {
@@ -137,6 +190,7 @@ const PlaceOrder = () => {
     cartItems,
     quantities
   );
+
   return (
     <div className="container mt-4">
       <main>
@@ -293,8 +347,12 @@ const PlaceOrder = () => {
                     value={data.state}
                     onChange={onChangeHandler}
                   >
-                    <option value="">Choose...</option>
-                    <option>Karnataka</option>
+                    <option value="">Choose State...</option>
+                    {Object.keys(stateCityMap).map((state) => (
+                      <option key={state} value={state}>
+                        {state}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -309,9 +367,16 @@ const PlaceOrder = () => {
                     name="city"
                     value={data.city}
                     onChange={onChangeHandler}
+                    disabled={!data.state}
                   >
-                    <option value="">Choose...</option>
-                    <option>Banglore</option>
+                    <option value="">
+                      {data.state ? "Choose City..." : "First select a state"}
+                    </option>
+                    {getCitiesForState().map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
